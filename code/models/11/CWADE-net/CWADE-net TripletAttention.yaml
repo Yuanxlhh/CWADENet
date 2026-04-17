@@ -1,0 +1,66 @@
+
+# YOLO11 object detection model with P3-P5 outputs. For Usage examples see https://docs.ultralytics.com/tasks/detect
+
+# Parameters
+nc: 2 # number of classes
+scales: # model compound scaling constants, i.e. 'model=yolo11n.yaml' will call yolo11.yaml with scale 'n'
+  # [depth, width, max_channels]
+  n: [0.50, 0.25, 1024] # summary: 319 layers, 2624080 parameters, 2624064 gradients, 6.6 GFLOPs
+  s: [0.50, 0.50, 1024] # summary: 319 layers, 9458752 parameters, 9458736 gradients, 21.7 GFLOPs
+  m: [0.50, 1.00, 512] # summary: 409 layers, 20114688 parameters, 20114672 gradients, 68.5 GFLOPs
+  l: [1.00, 1.00, 512] # summary: 631 layers, 25372160 parameters, 25372144 gradients, 87.6 GFLOPs
+  x: [1.00, 1.50, 512] # summary: 631 layers, 56966176 parameters, 56966160 gradients, 196.0 GFLOPs
+fusion_mode: concat
+# YOLO11n backbone
+backbone:
+  # [from, repeats, module, args]
+  - [-1, 1, SCINet, []] # 0-P1/2
+  - [-1, 1, Conv, [64, 3, 2]] # 1/2
+  - [-1, 1, Conv, [128, 3, 2]] # 2-P2/4
+  - [-1, 2, CSP_FreqSpatial, [128]] #3
+
+  - [-1, 1, MutilScaleEdgeInfoGenetator, [[128, 256, 512]]] # 4
+  - [4, 1, GetIndexOutput, [0]] # 5-P3/8
+  - [4, 1, GetIndexOutput, [1]] # 6-P4/16
+  - [4, 1, GetIndexOutput, [2]] # 7-P5/32
+
+  - [3, 1, Conv, [256, 3, 2]] # 8-P3/8
+  - [-1, 2, CSP_FreqSpatial, [256]] 
+  - [[5, -1], 1, ConvEdgeFusion, [512]] # 10-P3/8
+  - [-1, 1, Conv, [512, 3, 2]] # 11-P4/16
+  - [-1, 2, CSP_FreqSpatial, [512]]
+  - [[6, -1], 1, ConvEdgeFusion, [512]] # 13-P4/16
+  - [-1, 1, Conv, [1024, 3, 2]] # 14-P5/32
+  - [-1, 2, CSP_FreqSpatial, [1024]]
+  - [[7, -1], 1, ConvEdgeFusion, [1024]] # 16-P5/32
+  - [-1, 1, SPPF, [1024, 5]] # 17
+  - [-1, 2, C2PSA, [1024]] # 18
+
+# YOLO11n head
+head:
+  # Top-down
+  - [18 , 1, nn.Upsample, [None, 2, "nearest"]]   # 19II
+  - [-1, 2, CSP_FreqSpatial, [512]]                  # 20
+                
+  - [-1, 1, nn.Upsample, [None, 2, "nearest"]]   # 21
+  - [-1, 2, CSP_FreqSpatial, [256]]                 # 22
+
+  # Bottom-up
+  - [2, 1, Conv, [256, 3, 2]]                   # 23
+  - [-1, 1, Conv, [512, 3, 2]]                  # 24
+  - [-1, 1, Conv, [1024, 3, 2]]                 # 25
+  # P3 fusion
+  - [[22, 23, 10], 1, Fusion, [fusion_mode]] #26
+  - [-1, 1, TripletAttention, []]  # 👈 添加 CBAM#27
+  - [-1, 2, CSP_FreqSpatial, [256]]     #28
+  # P4 fusion
+  - [[20, 24, 13], 1, Fusion, [fusion_mode]] #29
+  - [-1, 1, TripletAttention, []]  # 👈 添加 CBAM#30
+  - [-1, 2, CSP_FreqSpatial, [512]]     #31
+  # P5 fusion
+  - [[18, 25], 1, Fusion, [fusion_mode]] #32
+  - [-1, 1, TripletAttention, []]  # 👈 添加 CBAM #33
+  - [-1, 2, CSP_FreqSpatial, [1024]]     #34
+  # Detect
+  - [[28, 31, 34], 1, Detect_LSCSBD, [nc, 256]]             # Detect(P3, P4, 
+  
