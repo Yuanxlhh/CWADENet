@@ -1,0 +1,3 @@
+vegetation
+brick_loss
+deadmood
