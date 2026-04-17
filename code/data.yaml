@@ -1,0 +1,20 @@
+
+# path: /home/xgq/Desktop/yolo/YOLO/ultralytics-yolo11-20250502/ultralytics-yolo11-main/dataset/6.2  # dataset root dir
+# train: images/train  
+# val: images/val  
+# test:   images/test 
+
+# # Classes 
+# names:
+#   0: vegetation
+#   1: brick_loss
+#   2: deadmood
+
+path: /home/xgq/Desktop/裂缝数据集
+train: images/train  
+val: images/test
+test:   images/test 
+
+# Classes 
+names:
+  0: crack

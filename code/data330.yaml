@@ -1,0 +1,20 @@
+
+path: /home/xgq/Desktop/天气光照实验  # dataset root dir
+train: images/train  
+val: 雨天/images 
+test:   images/test 
+
+# Classes 
+names:
+  0: vegetation
+  1: brick_loss
+  2: deadmood
+
+# path: /home/xgq/Desktop/裂缝数据集
+# train: images/train  
+# val: images/test
+# test:   images/test 
+
+# # Classes 
+# names:
+#   0: crack

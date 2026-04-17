@@ -1,0 +1,12 @@
+path: /home/xgq/Desktop/ultralytics-yolo11-20250502/ultralytics-yolo11-main/dataset/6.2
+train: images/train
+val: images/val
+test: images/test
+
+# 以下是 COCO 格式 JSON 标注文件路径（相对于 path）
+train_ann: annotations/train.json
+val_ann: annotations/val.json
+test_ann: annotations/test.json
+
+nc: 2
+names: ["vegetation", "brick_loss"]
